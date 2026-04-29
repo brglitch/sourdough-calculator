@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>酸種麵包計算機</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>酸種麵包計算機</h1>
+      <p class="subtitle">直覺計算，直接照秤</p>
+    </header>
+
+    <!-- 輸入區 -->
+    <section class="card input">
+      <h2>輸入</h2>
+
+      <label>
+        總麵團重量
+        <input type="number" id="totalDough" value="900">
+        <span class="unit">g</span>
+        <small>拌合完成的麵團總重（未烘烤）</small>
+      </label>
+
+      <label>
+        Starter 重量
+        <input type="number" id="starter" value="180">
+        <span class="unit">g</span>
+      </label>
+
+      <label>
+        目標含水量
+        <input type="number" id="hydration" value="72">
+        <span class="unit">%</span>
+      </label>
+
+      <input type="range" id="hydrationSlider" min="55" max="90" step="1" value="72">
+
+      <div class="quick">
+        <button data-h="68">68%</button>
+        <button data-h="72">72%</button>
+        <button data-h="78">78%</button>
+        <button data-h="80">80%</button>
+        <button data-h="82">82%</button>
+      </div>
+    </section>
+
+    <!-- 結果區 -->
+    <section class="card result">
+      <h2>結果</h2>
+
+      <div class="result-main">
+        <div class="result-number">
+          <span id="hydrationResult">72%</span>
+          <span class="label">實際含水量</span>
+        </div>
+        <p id="feel" class="feel"></p>
+        <p id="bassinage" class="hint"></p>
+      </div>
+
+      <ul class="list">
+        <li>
+          <span>新增麵粉</span>
+          <strong id="addFlour">0</strong><span class="unit">g</span>
+        </li>
+        <li>
+          <span>新增水</span>
+          <strong id="addWater">0</strong><span class="unit">g</span>
+        </li>
+        <li>
+          <span>鹽（2%）</span>
+          <strong id="salt">0</strong><span class="unit">g</span>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
+``
