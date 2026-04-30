@@ -13,6 +13,10 @@ const bassinageEl = document.getElementById("bassinage");
 const quickButtons = document.querySelectorAll(".quick button");
 const SALT_PCT = 0.02;
 
+/* ---------- 工具 ---------- */
+const fmt = n => n.toLocaleString("en-US");
+const num = v => Number(String(v).replace(/,/g, "") || 0);
+
 function feel(h) {
   if (h < 65) return "新手友善，偏乾、好整形";
   if (h < 75) return "經典酸種，最好操作";
@@ -20,41 +24,52 @@ function feel(h) {
   return "進階高含水，需要技巧";
 }
 
-function animate(el) {
+function animate() {
+  const el = document.querySelector(".result-number");
   el.style.animation = "none";
   el.offsetHeight;
   el.style.animation = null;
 }
 
-function calc() {
-  const T = +totalDough.value;
-  const S = +starter.value;
-  const H = +hydration.value / 100;
+/* ---------- 輸入行為 ---------- */
+[totalDough, starter].forEach(input => {
+  input.addEventListener("input", () => {
+    input.value = input.value.replace(/[^\d]/g, "");
+    calc();
+  });
 
-  const flourTotal = T / (1 + H + SALT_PCT);
-  const waterTotal = flourTotal * H;
+  input.addEventListener("blur", () => {
+    if (input.value !== "") input.value = fmt(num(input.value));
+  });
+});
 
-  const starterFlour = S / 2;
-  const starterWater = S / 2;
+hydration.addEventListener("input", () => {
+  hydration.value = hydration.value.replace(/[^\d]/g, "");
+  let h = num(hydration.value);
 
-  const addFlour = flourTotal - starterFlour;
-  const addWater = waterTotal - starterWater;
-  const salt = flourTotal * SALT_PCT;
-
-  hydrationResult.textContent = Math.round(H * 100) + "%";
-  addFlourEl.textContent = Math.round(addFlour);
-  addWaterEl.textContent = Math.round(addWater);
-  saltEl.textContent = Math.round(salt);
-  feelEl.textContent = feel(H * 100);
-
-  animate(document.querySelector(".result-number"));
-
-  if (H * 100 >= 78) {
-    bassinageEl.textContent = "高含水建議保留 20–40g 水，後續分次加入（bassinage）";
+  if (h > 90) {
+    h = 90;
+    bassinageEl.textContent = "含水量上限為 90%，已自動調整";
+  } else if (h < 55 && hydration.value !== "") {
+    h = 55;
+    bassinageEl.textContent = "含水量下限為 55%，已自動調整";
   } else {
     bassinageEl.textContent = "";
   }
-}
+
+  hydration.value = h;
+  slider.value = h;
+  calc();
+});
+
+/* ---------- 滑桿 / 快捷 ---------- */
+slider.oninput = () => {
+  hydration.value = slider.value;
+  quickButtons.forEach(b =>
+    b.classList.toggle("active", b.dataset.h === slider.value)
+  );
+  calc();
+};
 
 quickButtons.forEach(btn => {
   btn.onclick = () => {
@@ -66,20 +81,26 @@ quickButtons.forEach(btn => {
   };
 });
 
-[totalDough, starter, hydration].forEach(i => {
-  i.oninput = () => {
-    slider.value = hydration.value;
-    calc();
-  };
-});
+/* ---------- 計算 ---------- */
+function calc() {
+  const T = num(totalDough.value);
+  const S = num(starter.value);
+  const H = num(hydration.value) / 100;
 
-slider.oninput = () => {
-  hydration.value = slider.value;
-  quickButtons.forEach(b =>
-    b.classList.toggle("active", b.dataset.h === slider.value)
-  );
-  calc();
-};
+  const flourTotal = T / (1 + H + SALT_PCT);
+  const waterTotal = flourTotal * H;
+
+  const addFlour = flourTotal - S / 2;
+  const addWater = waterTotal - S / 2;
+  const salt = flourTotal * SALT_PCT;
+
+  hydrationResult.textContent = `${Math.round(H * 100)}%`;
+  addFlourEl.textContent = fmt(Math.round(addFlour));
+  addWaterEl.textContent = fmt(Math.round(addWater));
+  saltEl.textContent = fmt(Math.round(salt));
+
+  feelEl.textContent = feel(H * 100);
+  animate();
+}
 
 calc();
-``
