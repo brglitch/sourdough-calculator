@@ -13,7 +13,7 @@ const hintEl = document.getElementById("bassinage");
 const quickButtons = document.querySelectorAll(".quick button");
 const SALT_PCT = 0.02;
 
-/* ---------- 工具 ---------- */
+/* ---------- utils ---------- */
 const num = v => Number(String(v).replace(/,/g, "") || 0);
 const fmt = n => n.toLocaleString("en-US");
 
@@ -31,11 +31,13 @@ function animate() {
   el.style.animation = null;
 }
 
-/* ---------- 一般數字欄位 ---------- */
+/* =====================================================
+   一般欄位：即時可算
+===================================================== */
 [totalDough, starter].forEach(input => {
   input.addEventListener("input", () => {
     input.value = input.value.replace(/[^\d]/g, "");
-    calc();
+    calc(); // ✅ 這裡即時算沒問題
   });
 
   input.addEventListener("blur", () => {
@@ -44,15 +46,15 @@ function animate() {
 });
 
 /* =====================================================
-   ✅ 方案 A：目標含水量（UX 正確版）
+   ✅ 目標含水量：UX 正確版（重點）
 ===================================================== */
 
-/* 1️⃣ input：只收集意圖 */
+/* 輸入中：只收集意圖，完全不算 */
 hydration.addEventListener("input", () => {
   hydration.value = hydration.value.replace(/[^\d]/g, "");
 });
 
-/* 2️⃣ Enter：確認意圖（不回彈） */
+/* Enter：確認意圖 → 才計算（不回彈） */
 hydration.addEventListener("keydown", e => {
   if (e.key !== "Enter") return;
 
@@ -66,11 +68,11 @@ hydration.addEventListener("keydown", e => {
     hintEl.textContent = "";
   }
 
-  calc();        // ✅ 用使用者輸入值計算
-  hydration.blur(); // 結束輸入狀態（但 blur 才會回彈）
+  calc();          // ✅ 第一次算
+  hydration.blur(); // 結束輸入
 });
 
-/* 3️⃣ blur：回到產品預設世界 */
+/* blur：回到產品預設世界 */
 hydration.addEventListener("blur", () => {
   if (hydration.value === "") return;
 
@@ -79,7 +81,7 @@ hydration.addEventListener("blur", () => {
   if (h > 90) {
     h = 90;
     hintEl.textContent =
-      "已回到預設上限 90%。如需超高含水，建議使用進階模式";
+      "已回到預設上限 90%。如需超高含水請使用進階模式";
   } else if (h < 55) {
     h = 55;
     hintEl.textContent = "含水量下限為 55%，已自動調整";
@@ -89,10 +91,12 @@ hydration.addEventListener("blur", () => {
 
   hydration.value = h;
   slider.value = h;
-  calc();
+  calc(); // ✅ 第二次（正式）算
 });
 
-/* ---------- Slider ---------- */
+/* =====================================================
+   Slider / 快捷鍵（主動操作）
+===================================================== */
 slider.oninput = () => {
   hydration.value = slider.value;
   hintEl.textContent = "";
@@ -102,7 +106,6 @@ slider.oninput = () => {
   calc();
 };
 
-/* ---------- 快捷鍵 ---------- */
 quickButtons.forEach(btn => {
   btn.onclick = () => {
     hydration.value = btn.dataset.h;
@@ -114,7 +117,9 @@ quickButtons.forEach(btn => {
   };
 });
 
-/* ---------- 計算 ---------- */
+/* =====================================================
+   計算（唯一更新 UI 的地方）
+===================================================== */
 function calc() {
   const T = num(totalDough.value);
   const S = num(starter.value);
@@ -130,7 +135,7 @@ function calc() {
   const addWater = waterTotal - S / 2;
   const salt = flourTotal * SALT_PCT;
 
-  hydrationResult.textContent = `${Math.round(H_raw)}%`;
+  hydrationResult.textContent = `${H_raw}%`;
   addFlourEl.textContent = fmt(Math.round(addFlour));
   addWaterEl.textContent = fmt(Math.round(addWater));
   saltEl.textContent = fmt(Math.round(salt));
@@ -140,4 +145,3 @@ function calc() {
 }
 
 calc();
-``
